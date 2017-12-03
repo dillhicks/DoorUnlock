@@ -1,0 +1,49 @@
+import snowboydecoder
+import sys
+import signal
+from servo import Servo
+
+interrupted = False
+
+
+def signal_handler(signal, frame):
+    global interrupted
+    interrupted = True
+
+
+def interrupt_callback():
+    global interrupted
+    return interrupted
+
+if len(sys.argv) == 1:
+    print("Error: need to specify model name")
+    print("Usage: python demo.py your.model")
+    sys.exit(-1)
+
+#model = sys.argv[1]
+models = sys.argv[1:]
+
+# capture SIGINT signal, e.g., Ctrl+C
+signal.signal(signal.SIGINT, signal_handler)
+
+# detector = snowboydecoder.HotwordDetector(model, sensitivity=0.7)
+#length = len(models)
+detector = snowboydecoder.HotwordDetector(models, sensitivity=[0.6,0.5])
+turn = Servo(12)
+callbacks = [turn.move1, turn.move2]
+
+print('Listening... Press Ctrl+C to exit')
+
+# main loop
+##word = detector.start(detected_callback=snowboydecoder.play_audio_file, interrupt_check=interrupt_callback, sleep_time=0.03)
+word = detector.start(detected_callback=callbacks, interrupt_check=interrupt_callback, sleep_time=0.03)
+##print(word)
+##if word == '1':
+ ##   turn.move1
+## elif word == '2':
+##turn.move2
+#detector.start(detected_callback=turn.move1,
+ #              interrupt_check=interrupt_callback,
+  #             sleep_time=0.03)
+
+detector.terminate()
